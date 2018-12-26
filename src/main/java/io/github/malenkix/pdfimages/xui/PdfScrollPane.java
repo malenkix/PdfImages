@@ -10,6 +10,7 @@ import io.github.malenkix.pdfimages.viewmodels.PdfObject;
 public class PdfScrollPane extends ListScrollPane<PdfObject> {
 
     public PdfScrollPane() {
+        super(ListScrollPane.HORIZONTAL_WRAP);
         super.setCellRenderer(new PdfListCellRenderer());
     }
 }

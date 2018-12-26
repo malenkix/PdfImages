@@ -75,4 +75,15 @@ public class PdfImage extends PdfObject {
 
         return updated;
     }
+
+    @Override
+    public boolean isPage() {
+        return false;
+    }
+
+    @Override
+    public boolean isForRemoval() {
+        return page.isForRemoval();
+    }
+
 }

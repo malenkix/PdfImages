@@ -30,12 +30,12 @@ public class PdfReaderWorker extends SwingWorker<Void, PdfReaderUpdate> {
     private AtomicBoolean hintToStop = null;
     private Consumer<PdfReaderUpdate> callback = null;
 
-    private float dpi = 72f;
+    private float dpi = 36f;
     private boolean colored = true;
-    private int pageWidth = 200;
-    private int pageHeight = 300;
-    private int imageWidth = 100;
-    private int imageHeight = 160;
+    private int pageWidth = 150;
+    private int pageHeight = 225;
+    private int imageWidth = 50;
+    private int imageHeight = 80;
 
     public PdfReaderWorker(File file) {
         this.openFile = file;

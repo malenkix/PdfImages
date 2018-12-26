@@ -25,6 +25,12 @@ public class PdfPage extends PdfObject {
         images.add(image);
     }
 
+    @Override
+    public boolean isPage() {
+        return true;
+    }
+
+    @Override
     public boolean isForRemoval() {
         return forRemoval;
     }

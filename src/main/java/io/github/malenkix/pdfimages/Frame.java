@@ -1,11 +1,22 @@
 package io.github.malenkix.pdfimages;
 
+import io.github.malenkix.pdfimages.i18n.Bundle;
+import io.github.malenkix.pdfimages.i18n.I18n;
+import io.github.malenkix.pdfimages.io.PdfReaderWorker;
+import io.github.malenkix.pdfimages.io.PdfUpdateState;
+import io.github.malenkix.pdfimages.io.PdfWriterWorker;
+import io.github.malenkix.pdfimages.ui.Dialogs;
+import io.github.malenkix.pdfimages.viewmodels.PdfImage;
+import io.github.malenkix.pdfimages.viewmodels.PdfObject;
+import io.github.malenkix.pdfimages.viewmodels.PdfPage;
+import io.github.malenkix.pdfimages.xui.PdfScrollPane;
 import java.awt.BorderLayout;
 import java.awt.Color;
 import java.awt.GridLayout;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.io.File;
+import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.stream.Collectors;
 import javax.swing.Box;
@@ -50,7 +61,7 @@ public class Frame extends JFrame {
 
     private final JPanel framePanel = new JPanel(new BorderLayout(5, 5), true);
 
-    private final PdfList pdfList = new PdfList();
+    private final PdfScrollPane pdfScrollPane = new PdfScrollPane();
 
     private final JProgressBar feedProgressBar = new JProgressBar();
 
@@ -120,7 +131,7 @@ public class Frame extends JFrame {
         fileSaveItem.setEnabled(false);
         fileSaveAsItem.setEnabled(false);
         framePanel.setBorder(new EmptyBorder(10, 10, 10, 10));
-        pdfList.setListEnabled(false);
+        pdfScrollPane.setEnabled(false);
         feedProgressBar.setStringPainted(true);
         detailsPanel.setBorder(new CompoundBorder(new LineBorder(Color.GRAY), new EmptyBorder(5, 5, 5, 5)));
         detailRemovePageCheckBox.setEnabled(false);
@@ -143,7 +154,7 @@ public class Frame extends JFrame {
                 hintToStop.set(true);
             }
         });
-        pdfList.addListSelectionListener(() -> {
+        pdfScrollPane.addSelectionListener(e -> {
             detailRemovePageCheckBox.setEnabled(false);
             detailRemovePageCheckBox.setSelected(false);
             optionButtonGroup.clearSelection();
@@ -152,42 +163,48 @@ public class Frame extends JFrame {
             optionColorButton.setEnabled(false);
             optionColorPreviewPanel.setBackground(null);
             optionApplyButton.setEnabled(false);
-            final PdfModel model = pdfList.getListSelectedValue();
+            final PdfObject model = pdfScrollPane.getSelectedValue();
             if (model != null) {
                 detailRemovePageCheckBox.setEnabled(model.isPage());
-                detailRemovePageCheckBox.setSelected(model.isForRemoval() || (model.getParent() != null && model.getParent().isForRemoval()));
-                if (!model.isPage() && !model.getParent().isForRemoval()) {
+                detailRemovePageCheckBox.setSelected(model.isForRemoval());
+                if (model instanceof PdfImage && !model.isForRemoval()) {
+                    final PdfImage imageModel = (PdfImage) model;
                     optionBlankButton.setEnabled(true);
-                    optionBlankButton.setSelected(model.isBlank());
+                    optionBlankButton.setSelected(imageModel.isBlank());
                     optionWhiteButton.setEnabled(true);
-                    optionWhiteButton.setSelected(model.getColor() != null && model.getColor().equals(Color.WHITE));
+                    optionWhiteButton.setSelected(imageModel.isWhite());
                     optionColorButton.setEnabled(true);
-                    optionColorButton.setSelected(model.getColor() != null && !model.getColor().equals(Color.WHITE));
-                    optionColorPreviewPanel.setBackground(model.getColor() != null && !model.getColor().equals(Color.WHITE) ? model.getColor() : null);
+                    optionColorButton.setSelected(imageModel.hasColor() && !imageModel.isWhite());
+                    optionColorPreviewPanel.setBackground(imageModel.hasColor() && !imageModel.isWhite() ? imageModel.getColor() : null);
                     optionApplyButton.setEnabled(true);
                 }
+                pdfScrollPane.requestListRepaint();
             }
         });
         detailRemovePageCheckBox.addActionListener(e -> {
-            final PdfModel model = pdfList.getListSelectedValue();
+            final PdfObject model = pdfScrollPane.getSelectedValue();
             if (model != null && model.isPage()) {
-                model.setForRemoval(detailRemovePageCheckBox.isSelected());
-                pdfList.requestFocusForList();
-                pdfList.requestRepaintForList();
+                ((PdfPage) model).setForRemoval(detailRemovePageCheckBox.isSelected());
+                pdfScrollPane.requestListFocus();
+                pdfScrollPane.requestListRepaint();
             }
         });
         optionBlankButton.addActionListener(e -> onOptionSelected());
         optionWhiteButton.addActionListener(e -> onOptionSelected());
         optionColorButton.addActionListener(e -> onOptionSelected());
         optionApplyButton.addActionListener(e -> {
-            final PdfModel model = pdfList.getListSelectedValue();
+            final PdfObject model = pdfScrollPane.getSelectedValue();
             if (model != null && !model.isPage()) {
-                pdfList.getListModels().stream().filter(model::hasSamePreviewAs).forEach(other -> {
-                    other.setBlank(model.isBlank());
-                    other.setColor(model.getColor());
+                final PdfImage imageModel = (PdfImage) model;
+                pdfScrollPane.getModels(model::hasSameOriginalAs).forEach(other -> {
+                    if (other instanceof PdfImage) {
+                        final PdfImage otherImageModel = (PdfImage) other;
+                        otherImageModel.setBlank(imageModel.isBlank());
+                        otherImageModel.setColor(imageModel.getColor());
+                    }
                 });
-                pdfList.requestFocusForList();
-                pdfList.requestRepaintForList();
+                pdfScrollPane.requestListFocus();
+                pdfScrollPane.requestListRepaint();
             }
         });
     }
@@ -195,7 +212,7 @@ public class Frame extends JFrame {
     private void initLayout() {
         super.add(framePanel, BorderLayout.CENTER);
         framePanel.add(feedProgressBar, BorderLayout.SOUTH);
-        framePanel.add(pdfList, BorderLayout.CENTER);
+        framePanel.add(pdfScrollPane, BorderLayout.CENTER);
         framePanel.add(detailsPanel, BorderLayout.EAST);
         detailsPanel.add(detailRemovePageCheckBox, BorderLayout.NORTH);
         detailsPanel.add(optionsHelperPanel, BorderLayout.CENTER);
@@ -220,20 +237,21 @@ public class Frame extends JFrame {
             final PdfReaderWorker worker = new PdfReaderWorker(file);
             worker.setHintToStop(hintToStop);
             worker.setCallback(update -> {
-                if (update.start) {
+                if (PdfUpdateState.BEFORE_LOAD == update.getState()) {
                     fileSaveItem.setEnabled(false);
                     fileSaveAsItem.setEnabled(false);
                     feedProgressBar.setValue(0);
-                    pdfList.clearListModels();
-                    pdfList.setListEnabled(false);
-                } else if (update.preview != null) {
+                    pdfScrollPane.clear();
+                    pdfScrollPane.setEnabled(false);
+                } else if (PdfUpdateState.PAGE_PROGRESS == update.getState() && update.getPage() != null) {
                     feedProgressBar.setValue(worker.getProgress());
-                    pdfList.addListModel(update.preview);
-                } else if (update.done) {
+                    pdfScrollPane.addModel(update.getPage());
+                    update.getPage().getImages().forEach(pdfScrollPane::addModel);
+                } else if (PdfUpdateState.DONE == update.getState()) {
                     fileSaveItem.setEnabled(true);
                     fileSaveAsItem.setEnabled(true);
                     feedProgressBar.setValue(100);
-                    pdfList.setListEnabled(true);
+                    pdfScrollPane.setEnabled(true);
                 }
             });
             worker.execute();
@@ -252,23 +270,23 @@ public class Frame extends JFrame {
             }
         }
         if (file != null) {
-            final PdfModel[] pageModels = pdfList.getListModels().stream().filter(PdfModel::isPage).collect(Collectors.toList()).toArray(new PdfModel[0]);
+            final List<PdfPage> pageModels = pdfScrollPane.getModels(PdfObject::isPage).stream().map(o -> (PdfPage) o).collect(Collectors.toList());
             final PdfWriterWorker worker = new PdfWriterWorker(openPdfFile, savePdfFile, pageModels);
             worker.setHintToStop(hintToStop);
             worker.setCallback(update -> {
-                if (update.start) {
+                if (PdfUpdateState.BEFORE_LOAD == update.getState()) {
                     fileOpenItem.setEnabled(false);
                     fileSaveItem.setEnabled(false);
                     fileSaveAsItem.setEnabled(false);
                     feedProgressBar.setValue(0);
-                    pdfList.clearListSelection();
-                    pdfList.setListEnabled(false);
-                } else if (update.done) {
+                    pdfScrollPane.clearSelection();
+                    pdfScrollPane.setEnabled(false);
+                } else if (PdfUpdateState.DONE == update.getState()) {
                     fileOpenItem.setEnabled(true);
                     fileSaveItem.setEnabled(true);
                     fileSaveAsItem.setEnabled(true);
                     feedProgressBar.setValue(100);
-                    pdfList.setListEnabled(true);
+                    pdfScrollPane.setEnabled(true);
                 }
             });
             worker.execute();
@@ -276,26 +294,27 @@ public class Frame extends JFrame {
     }
 
     private void onOptionSelected() {
-        final PdfModel model = pdfList.getListSelectedValue();
+        final PdfObject model = pdfScrollPane.getSelectedValue();
         if (model != null && !model.isPage()) {
+            final PdfImage imageModel = (PdfImage) model;
             if (optionBlankButton.isSelected()) {
-                model.setBlank(true);
-                model.setColor(null);
+                imageModel.setBlank(true);
+                imageModel.setColor(null);
                 optionColorPreviewPanel.setBackground(null);
             } else if (optionWhiteButton.isSelected()) {
-                model.setBlank(false);
-                model.setColor(Color.WHITE);
+                imageModel.setBlank(false);
+                imageModel.setColor(Color.WHITE);
                 optionColorPreviewPanel.setBackground(null);
             } else if (optionColorButton.isSelected()) {
-                final Color color = JColorChooser.showDialog(this, null, Color.WHITE);
-                model.setBlank(false);
-                model.setColor(color);
+                final Color color = Dialogs.chooseColor(this, Color.WHITE);
+                imageModel.setBlank(false);
+                imageModel.setColor(color);
                 if (color == null) {
                     optionButtonGroup.clearSelection();
                 }
                 optionColorPreviewPanel.setBackground(color);
             }
-            pdfList.requestRepaintForList();
+            pdfScrollPane.requestListRepaint();
         }
     }
 
@@ -305,7 +324,7 @@ public class Frame extends JFrame {
         JOptionPane.setDefaultLocale(I18n.getCurrentLocale());
         JColorChooser.setDefaultLocale(I18n.getCurrentLocale());
 
-        final I18n.Bundle bundle = I18n.getCurrentBundle();
+        final Bundle bundle = I18n.getCurrentBundle();
 
         fileMenu.setText(bundle.getFile());
         fileOpenItem.setText(bundle.getFileOpen());

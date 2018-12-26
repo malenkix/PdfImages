@@ -61,5 +61,8 @@ public abstract class PdfObject {
     public void setPreview(BufferedImage preview) {
         this.preview = preview;
     }
+    
+    public abstract boolean isPage();
 
+    public abstract boolean isForRemoval();
 }
