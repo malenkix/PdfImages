@@ -9,13 +9,22 @@ Feel free to check it out (Java 8 JRE needed) and download the runnable jar from
 ## Manual
 
 Go to `File` and choose `Open File...` to select and open a pdf file from your computer.
-The pages and images will be loaded and shown in the UI. Wait until all pages and images has been loaded and the progress bar is at 100%.
+The pages and images will be loaded and shown in the UI. Wait until all pages and images have been loaded and the progress bar is at 100%.
 
 You can choose a page or image with your mouse and navigate between them using your keyboard as well.
 
 If you selected a page you can check `Remove Page` to exclude it from your final file. Please note all images belonging to the page will be highlighted as well and won't allow any editing anymore.
 
-If you selected an image you can choose between different modes of what should be done with this image in the final file.
+If you selected an image you can choose between different modes of what should be done with this image in the final file:
+* Select `Set Blank` to replace it with a 1x1 transparent pixel.
+* Select `Set White` to replace it with a white image having the same size.
+* Select `Set Color...` to choose a different color as white.
+
+You can press the button `Apply On Same Images` if you want to apply your selection to all same looking images.
+Please note the focus will be set to the images afterwards for your convenience.
+
+When you are happy with your changes you can go to `File` and choose `Save File` or `Save File As...` to save your changes.
+If you already saved before the previous chosen file will be remembered and you can check it hovering `Save File` to view it.
 
 ## License
 
