@@ -53,9 +53,6 @@
             <version>3.0.2</version>
         </dependency>
 
-        <!-- For legal reasons (incompatible license), these two dependencies
-        are to be used only in the tests and may not be distributed.
-        See also LEGAL-195 -->
         <dependency>
             <groupId>com.github.jai-imageio</groupId>
             <artifactId>jai-imageio-core</artifactId>
@@ -87,12 +84,6 @@
     </dependencies>
     
     <build>
-        <resources>
-            <resource>
-                <directory>${basedir}/src/main/resources</directory>
-                <filtering>true</filtering>
-            </resource>
-        </resources>
         <plugins>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
