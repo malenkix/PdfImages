@@ -34,6 +34,10 @@ public interface Bundle {
         return "Remove Page";
     }
 
+    default String getOptionNone() {
+        return "None";
+    }
+
     default String getOptionBlank() {
         return "Set Blank";
     }

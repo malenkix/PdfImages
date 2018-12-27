@@ -70,6 +70,7 @@ public class Frame extends JFrame {
     private final JPanel optionsHelperPanel = new JPanel(new BorderLayout(5, 5), true);
     private final JPanel optionsPanel = new JPanel(new GridLayout(0, 2, 5, 5), true);
     private final ButtonGroup optionButtonGroup = new ButtonGroup();
+    private final JRadioButton optionNoneButton = new JRadioButton();
     private final JRadioButton optionBlankButton = new JRadioButton();
     private final JRadioButton optionWhiteButton = new JRadioButton();
     private final JRadioButton optionColorButton = new JRadioButton();
@@ -136,9 +137,12 @@ public class Frame extends JFrame {
         detailsPanel.setBorder(new CompoundBorder(new LineBorder(Color.GRAY), new EmptyBorder(5, 5, 5, 5)));
         detailRemovePageCheckBox.setEnabled(false);
         optionsPanel.setBorder(new CompoundBorder(new MatteBorder(1, 0, 0, 0, Color.GRAY), new EmptyBorder(5, 0, 0, 0)));
+        optionButtonGroup.add(optionNoneButton);
         optionButtonGroup.add(optionBlankButton);
         optionButtonGroup.add(optionWhiteButton);
         optionButtonGroup.add(optionColorButton);
+        optionNoneButton.setEnabled(false);
+        optionNoneButton.setSelected(true);
         optionBlankButton.setEnabled(false);
         optionWhiteButton.setEnabled(false);
         optionColorButton.setEnabled(false);
@@ -157,7 +161,8 @@ public class Frame extends JFrame {
         pdfScrollPane.addSelectionListener(e -> {
             detailRemovePageCheckBox.setEnabled(false);
             detailRemovePageCheckBox.setSelected(false);
-            optionButtonGroup.clearSelection();
+            optionNoneButton.setEnabled(false);
+            optionNoneButton.setSelected(true);
             optionBlankButton.setEnabled(false);
             optionWhiteButton.setEnabled(false);
             optionColorButton.setEnabled(false);
@@ -169,6 +174,8 @@ public class Frame extends JFrame {
                 detailRemovePageCheckBox.setSelected(model.isForRemoval());
                 if (model instanceof PdfImage && !model.isForRemoval()) {
                     final PdfImage imageModel = (PdfImage) model;
+                    optionNoneButton.setEnabled(true);
+                    optionNoneButton.setSelected(!imageModel.hasUpdate());
                     optionBlankButton.setEnabled(true);
                     optionBlankButton.setSelected(imageModel.isBlank());
                     optionWhiteButton.setEnabled(true);
@@ -189,6 +196,7 @@ public class Frame extends JFrame {
                 pdfScrollPane.requestListRepaint();
             }
         });
+        optionNoneButton.addActionListener(e -> onOptionSelected());
         optionBlankButton.addActionListener(e -> onOptionSelected());
         optionWhiteButton.addActionListener(e -> onOptionSelected());
         optionColorButton.addActionListener(e -> onOptionSelected());
@@ -217,6 +225,8 @@ public class Frame extends JFrame {
         detailsPanel.add(detailRemovePageCheckBox, BorderLayout.NORTH);
         detailsPanel.add(optionsHelperPanel, BorderLayout.CENTER);
         optionsHelperPanel.add(optionsPanel, BorderLayout.NORTH);
+        optionsPanel.add(optionNoneButton);
+        optionsPanel.add(Box.createHorizontalGlue());
         optionsPanel.add(optionBlankButton);
         optionsPanel.add(Box.createHorizontalGlue());
         optionsPanel.add(optionWhiteButton);
@@ -297,7 +307,12 @@ public class Frame extends JFrame {
         final PdfObject model = pdfScrollPane.getSelectedValue();
         if (model != null && !model.isPage()) {
             final PdfImage imageModel = (PdfImage) model;
-            if (optionBlankButton.isSelected()) {
+            if (optionNoneButton.isSelected()) {
+                imageModel.setBlank(false);
+                imageModel.setColor(null);
+                optionColorPreviewPanel.setBackground(null);
+                pdfScrollPane.requestListFocus();
+            } else if (optionBlankButton.isSelected()) {
                 imageModel.setBlank(true);
                 imageModel.setColor(null);
                 optionColorPreviewPanel.setBackground(null);
@@ -333,6 +348,7 @@ public class Frame extends JFrame {
         fileExitItem.setText(bundle.getFileExit());
         languagesMenu.setText(bundle.getLanguages());
         detailRemovePageCheckBox.setText(bundle.getRemovePage());
+        optionNoneButton.setText(bundle.getOptionNone());
         optionBlankButton.setText(bundle.getOptionBlank());
         optionWhiteButton.setText(bundle.getOptionWhite());
         optionColorButton.setText(bundle.getOptionColor());
