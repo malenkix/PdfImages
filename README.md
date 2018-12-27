@@ -1,5 +1,22 @@
 # PdfImages
 
+Ever bought a PDF file containing large background images (e.g. character sheets for role-playing games) making it hard to read the file on a mobile device or to print it and not be able to find software to remove these images for free?
+Maybe you found something to remove the background image just to notice the whole page has been created with a colored background?
+
+I don't know if you ever faced these problems but I did and created this piece of Java software to my rescue.
+Feel free to check it out (Java 8 JRE needed) and download the runnable jar from the release section.
+
+## Manual
+
+Go to `File` and choose `Open File...` to select and open a pdf file from your computer.
+The pages and images will be loaded and shown in the UI. Wait until all pages and images has been loaded and the progress bar is at 100%.
+
+You can choose a page or image with your mouse and navigate between them using your keyboard as well.
+
+If you selected a page you can check `Remove Page` to exclude it from your final file. Please note all images belonging to the page will be highlighted as well and won't allow any editing anymore.
+
+If you selected an image you can choose between different modes of what should be done with this image in the final file.
+
 ## License
 
 BSD 3-Clause License
