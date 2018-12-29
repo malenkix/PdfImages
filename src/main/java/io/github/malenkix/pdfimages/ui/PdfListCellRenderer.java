@@ -1,9 +1,9 @@
-package io.github.malenkix.pdfimages.xui;
+package io.github.malenkix.pdfimages.ui;
 
-import io.github.malenkix.pdfimages.ui.Borders;
 import io.github.malenkix.pdfimages.viewmodels.PdfImage;
 import io.github.malenkix.pdfimages.viewmodels.PdfObject;
 import io.github.malenkix.pdfimages.viewmodels.PdfPage;
+import io.github.malenkix.swing.Borders;
 import java.awt.Color;
 import java.awt.Component;
 import javax.swing.DefaultListCellRenderer;
@@ -38,19 +38,19 @@ public class PdfListCellRenderer implements ListCellRenderer<PdfObject> {
             }
 
             if (forRemoval && selected) {
-                label.setBorder(Borders.compound(Borders.line(Color.RED, 2), Borders.emptyBorder(3)));
+                label.setBorder(Borders.compound(Borders.line(Color.RED, 2), Borders.empty(3)));
             } else if (forRemoval) {
-                label.setBorder(Borders.compound(Borders.dashed(Color.RED, 2), Borders.emptyBorder(3)));
+                label.setBorder(Borders.compound(Borders.dashed(Color.RED, 2), Borders.empty(3)));
             } else if (selected && edited) {
-                label.setBorder(Borders.compound(Borders.line(Color.ORANGE, 2), Borders.emptyBorder(3)));
+                label.setBorder(Borders.compound(Borders.line(Color.ORANGE, 2), Borders.empty(3)));
             } else if (edited) {
-                label.setBorder(Borders.compound(Borders.dashed(Color.ORANGE, 2), Borders.emptyBorder(3)));
+                label.setBorder(Borders.compound(Borders.dashed(Color.ORANGE, 2), Borders.empty(3)));
             } else if (selected) {
-                label.setBorder(Borders.compound(Borders.line(Color.BLUE, 2), Borders.emptyBorder(3)));
+                label.setBorder(Borders.compound(Borders.line(Color.BLUE, 2), Borders.empty(3)));
             } else if (hasFocus) {
-                label.setBorder(Borders.compound(Borders.line(Color.BLUE, 1), Borders.emptyBorder(4)));
+                label.setBorder(Borders.compound(Borders.line(Color.BLUE, 1), Borders.empty(4)));
             } else {
-                label.setBorder(Borders.emptyBorder(5));
+                label.setBorder(Borders.empty(5));
             }
         }
         return label;

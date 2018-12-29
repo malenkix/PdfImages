@@ -1,7 +1,7 @@
-package io.github.malenkix.pdfimages.xui;
+package io.github.malenkix.pdfimages.ui;
 
-import io.github.malenkix.pdfimages.ui.ListScrollPane;
 import io.github.malenkix.pdfimages.viewmodels.PdfObject;
+import io.github.malenkix.swing.ListScrollPane;
 
 /**
  *

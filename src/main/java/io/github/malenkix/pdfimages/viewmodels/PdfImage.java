@@ -1,6 +1,7 @@
 package io.github.malenkix.pdfimages.viewmodels;
 
 import java.awt.Color;
+import java.awt.Graphics;
 import java.awt.image.BufferedImage;
 
 /**
@@ -13,6 +14,8 @@ public class PdfImage extends PdfObject {
 
     private boolean blank;
     private Color color;
+    private boolean border;
+    private boolean ellipsis;
 
     public PdfImage(PdfPage page) {
         this.page = page;
@@ -46,8 +49,24 @@ public class PdfImage extends PdfObject {
         this.color = color;
     }
 
+    public boolean hasBorder() {
+        return border;
+    }
+
+    public void setBorder(boolean border) {
+        this.border = border;
+    }
+
+    public boolean hasEllipsis() {
+        return ellipsis;
+    }
+
+    public void setEllipsis(boolean ellipsis) {
+        this.ellipsis = ellipsis;
+    }
+
     public boolean hasUpdate() {
-        return isBlank() || hasColor();
+        return isBlank() || hasColor() || hasBorder() || hasEllipsis();
     }
 
     public BufferedImage getUpdated() {
@@ -69,6 +88,33 @@ public class PdfImage extends PdfObject {
                     updated.setRGB(x, y, rgb);
                 }
             }
+        } else if (border) {
+            final int width = getOriginal().getWidth();
+            final int height = getOriginal().getHeight();
+            final int rgb = new Color(255, 255, 255, 0).getRGB();
+            updated = new BufferedImage(width, height, getOriginal().getType());
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    updated.setRGB(x, y, rgb);
+                }
+            }
+            final Graphics g = updated.getGraphics();
+            g.setColor(Color.BLACK);
+            g.drawRect(0, 0, width - 1, height - 1);
+            g.drawRect(1, 1, width - 2, height - 2);
+        } else if (ellipsis) {
+            final int width = getOriginal().getWidth();
+            final int height = getOriginal().getHeight();
+            final int rgb = new Color(255, 255, 255, 0).getRGB();
+            updated = new BufferedImage(width, height, getOriginal().getType());
+            for (int x = 0; x < width; x++) {
+                for (int y = 0; y < height; y++) {
+                    updated.setRGB(x, y, rgb);
+                }
+            }
+            final Graphics g = updated.getGraphics();
+            g.setColor(Color.BLACK);
+            g.fillOval(0, 0, width, height);
         } else {
             updated = null;
         }

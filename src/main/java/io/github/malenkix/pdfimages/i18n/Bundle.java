@@ -14,6 +14,10 @@ public interface Bundle {
         return "Open File...";
     }
 
+    default String getFileOpenRecent() {
+        return "Open Recent File";
+    }
+
     default String getFileSave() {
         return "Save File";
     }
@@ -48,6 +52,14 @@ public interface Bundle {
 
     default String getOptionColor() {
         return "Set Color...";
+    }
+
+    default String getOptionBorder() {
+        return "Set Border";
+    }
+
+    default String getOptionCircle() {
+        return "Set Circle";
     }
 
     default String getOptionApply() {
